@@ -36,6 +36,10 @@ values."
      version-control
      c-c++
      rust
+     python
+     racket
+     common-lisp
+     scheme
      latex
      (auto-completion :variables
                       auto-completion-return-key-behavior 'complete
@@ -251,7 +255,6 @@ This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
   (setq mac-option-modifier 'super)
   (setq mac-command-modifier 'meta)
-  (key-chord-mode 1)
   (defun check-expansion ()
     (save-excursion
       (if (looking-at "\\_>") t
@@ -279,7 +282,65 @@ layers configuration. You are free to put any user code."
     (define-key yas-minor-mode-map (kbd "TAB") 'tab-indent-or-complete)
     (define-key company-active-map [tab] 'tab-indent-or-complete)
     (add-hook 'company-mode-hook 'bind-tab-properly))
-  (global-set-key (kbd "TAB") 'tab-indent-or-complete))
+  (global-set-key (kbd "TAB") 'tab-indent-or-complete)
+  (add-hook 'rust-mode-hook 'pretty-lambda-mode)
+  (add-hook 'common-lisp-lisp-mode-hook 'pretty-lambda-mode)
+  (add-hook 'emacs-lisp-mode-hook 'pretty-lambda-mode)
+  (add-hook 'racket-mode-hook 'pretty-lambda-mode)
+  (global-set-key (kbd "C-x C-h") help-map)
+  (global-set-key (kbd "C-h") 'previous-line)
+
+  (define-key evil-normal-state-map "y" 'evil-yank)
+  (define-key evil-normal-state-map "h" 'evil-next-line)
+  (define-key evil-normal-state-map "t" 'evil-previous-line)
+  (define-key evil-normal-state-map "d" 'evil-backward-char)
+  (define-key evil-normal-state-map "n" 'evil-forward-char)
+  (define-key evil-normal-state-map "e" 'evil-delete)
+  (define-key evil-normal-state-map "f" 'evil-forward-WORD-end)
+  (define-key evil-normal-state-map "l" 'evil-search-forward)
+
+  (define-key evil-normal-state-map "\C-e" 'evil-end-of-line)
+  (define-key evil-insert-state-map "\C-e" 'end-of-line)
+  (define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
+  (define-key evil-motion-state-map "\C-e" 'evil-end-of-line)
+  (define-key evil-normal-state-map "\C-f" 'evil-forward-char)
+  (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
+  (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
+  (define-key evil-normal-state-map "\C-b" 'evil-backward-char)
+  (define-key evil-insert-state-map "\C-b" 'evil-backward-char)
+  (define-key evil-visual-state-map "\C-b" 'evil-backward-char)
+  (define-key evil-normal-state-map "\C-d" 'evil-delete-char)
+  (define-key evil-insert-state-map "\C-d" 'evil-delete-char)
+  (define-key evil-visual-state-map "\C-d" 'evil-delete-char)
+  (define-key evil-normal-state-map "\C-n" 'evil-next-line)
+  (define-key evil-insert-state-map "\C-n" 'evil-next-line)
+  (define-key evil-visual-state-map "\C-n" 'evil-next-line)
+  (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
+  (define-key evil-insert-state-map "\C-p" 'evil-previous-line)
+  (define-key evil-visual-state-map "\C-p" 'evil-previous-line)
+  (define-key evil-normal-state-map "\C-w" 'evil-delete)
+  (define-key evil-insert-state-map "\C-w" 'evil-delete)
+  (define-key evil-visual-state-map "\C-w" 'evil-delete)
+  (define-key evil-normal-state-map "\C-y" 'yank)
+  (define-key evil-insert-state-map "\C-y" 'yank)
+  (define-key evil-visual-state-map "\C-y" 'yank)
+  (define-key evil-normal-state-map "\C-k" 'kill-line)
+  (define-key evil-insert-state-map "\C-k" 'kill-line)
+  (define-key evil-visual-state-map "\C-k" 'kill-line)
+  (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
+  (define-key evil-visual-state-map "Q" 'call-last-kbd-macro)
+  (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
+
+  (defun evil-undefine ()
+    (interactive)
+    (let (evil-mode-map-alist)
+      (call-interactively (key-binding (this-command-keys)))))
+
+  ;;Exit insert mode by pressing j and then j quickly
+  (setq key-chord-two-keys-delay 0.5)
+  (key-chord-define evil-insert-state-map "hh" 'evil-normal-state)
+  (key-chord-mode 1)
+  )
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
