@@ -37,6 +37,7 @@ values."
      c-c++
      rust
      python
+     ruby
      racket
      common-lisp
      scheme
@@ -51,7 +52,7 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(
-                                      key-chord
+                                      ;;key-chord
                                       pretty-lambdada)
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
@@ -292,44 +293,51 @@ layers configuration. You are free to put any user code."
 
   (define-key evil-normal-state-map "y" 'evil-yank)
   (define-key evil-normal-state-map "h" 'evil-next-line)
+  (define-key evil-normal-state-map "H" 'evil-join)
   (define-key evil-normal-state-map "t" 'evil-previous-line)
   (define-key evil-normal-state-map "d" 'evil-backward-char)
   (define-key evil-normal-state-map "n" 'evil-forward-char)
   (define-key evil-normal-state-map "e" 'evil-delete)
+  (define-key evil-normal-state-map "E" 'evil-delete-line)
   (define-key evil-normal-state-map "f" 'evil-forward-WORD-end)
-  (define-key evil-normal-state-map "l" 'evil-search-forward)
+  (define-key evil-normal-state-map "l" 'evil-search-next)
+  (define-key evil-normal-state-map "L" 'evil-search-previous)
+  (define-key evil-visual-state-map "h" 'evil-next-line)
+  (define-key evil-visual-state-map "t" 'evil-previous-line)
+  (define-key evil-visual-state-map "d" 'evil-backward-char)
+  (define-key evil-visual-state-map "n" 'evil-forward-char)
 
-  (define-key evil-normal-state-map "\C-e" 'evil-end-of-line)
-  (define-key evil-insert-state-map "\C-e" 'end-of-line)
-  (define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
-  (define-key evil-motion-state-map "\C-e" 'evil-end-of-line)
-  (define-key evil-normal-state-map "\C-f" 'evil-forward-char)
-  (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
-  (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
-  (define-key evil-normal-state-map "\C-b" 'evil-backward-char)
-  (define-key evil-insert-state-map "\C-b" 'evil-backward-char)
-  (define-key evil-visual-state-map "\C-b" 'evil-backward-char)
-  (define-key evil-normal-state-map "\C-d" 'evil-delete-char)
-  (define-key evil-insert-state-map "\C-d" 'evil-delete-char)
-  (define-key evil-visual-state-map "\C-d" 'evil-delete-char)
-  (define-key evil-normal-state-map "\C-n" 'evil-next-line)
-  (define-key evil-insert-state-map "\C-n" 'evil-next-line)
-  (define-key evil-visual-state-map "\C-n" 'evil-next-line)
-  (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
-  (define-key evil-insert-state-map "\C-p" 'evil-previous-line)
-  (define-key evil-visual-state-map "\C-p" 'evil-previous-line)
-  (define-key evil-normal-state-map "\C-w" 'evil-delete)
-  (define-key evil-insert-state-map "\C-w" 'evil-delete)
-  (define-key evil-visual-state-map "\C-w" 'evil-delete)
-  (define-key evil-normal-state-map "\C-y" 'yank)
-  (define-key evil-insert-state-map "\C-y" 'yank)
-  (define-key evil-visual-state-map "\C-y" 'yank)
-  (define-key evil-normal-state-map "\C-k" 'kill-line)
-  (define-key evil-insert-state-map "\C-k" 'kill-line)
-  (define-key evil-visual-state-map "\C-k" 'kill-line)
-  (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
-  (define-key evil-visual-state-map "Q" 'call-last-kbd-macro)
-  (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
+  ;; (define-key evil-normal-state-map "\C-e" 'evil-end-of-line)
+  ;; (define-key evil-insert-state-map "\C-e" 'end-of-line)
+  ;; (define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
+  ;; (define-key evil-motion-state-map "\C-e" 'evil-end-of-line)
+  ;; (define-key evil-normal-state-map "\C-f" 'evil-forward-char)
+  ;; (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
+  ;; (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
+  ;; (define-key evil-normal-state-map "\C-b" 'evil-backward-char)
+  ;; (define-key evil-insert-state-map "\C-b" 'evil-backward-char)
+  ;; (define-key evil-visual-state-map "\C-b" 'evil-backward-char)
+  ;; (define-key evil-normal-state-map "\C-d" 'evil-delete-char)
+  ;; (define-key evil-insert-state-map "\C-d" 'evil-delete-char)
+  ;; (define-key evil-visual-state-map "\C-d" 'evil-delete-char)
+  ;; (define-key evil-normal-state-map "\C-n" 'evil-next-line)
+  ;; (define-key evil-insert-state-map "\C-n" 'evil-next-line)
+  ;; (define-key evil-visual-state-map "\C-n" 'evil-next-line)
+  ;; (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
+  ;; (define-key evil-insert-state-map "\C-p" 'evil-previous-line)
+  ;; (define-key evil-visual-state-map "\C-p" 'evil-previous-line)
+  ;; (define-key evil-normal-state-map "\C-w" 'evil-delete)
+  ;; (define-key evil-insert-state-map "\C-w" 'evil-delete)
+  ;; (define-key evil-visual-state-map "\C-w" 'evil-delete)
+  ;; (define-key evil-normal-state-map "\C-y" 'yank)
+  ;; (define-key evil-insert-state-map "\C-y" 'yank)
+  ;; (define-key evil-visual-state-map "\C-y" 'yank)
+  ;; (define-key evil-normal-state-map "\C-k" 'kill-line)
+  ;; (define-key evil-insert-state-map "\C-k" 'kill-line)
+  ;; (define-key evil-visual-state-map "\C-k" 'kill-line)
+  ;; (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
+  ;; (define-key evil-visual-state-map "Q" 'call-last-kbd-macro)
+  ;; (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
 
   (defun evil-undefine ()
     (interactive)
@@ -337,9 +345,11 @@ layers configuration. You are free to put any user code."
       (call-interactively (key-binding (this-command-keys)))))
 
   ;;Exit insert mode by pressing j and then j quickly
-  (setq key-chord-two-keys-delay 0.5)
-  (key-chord-define evil-insert-state-map "hh" 'evil-normal-state)
-  (key-chord-mode 1)
+  ;;(require 'key-chord)
+  ;;(key-chord-mode 1)
+  ;;(key-chord-define evil-insert-state-map  "hh" 'evil-normal-state)
+  (setq-default evil-escape-key-sequence "ht")
+  (setq-default evil-escape-delay 0.2)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
