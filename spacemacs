@@ -18,16 +18,23 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
+     helm
+     yaml
+     html
+     clojure
+     javascript
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
      ;; <M-m f e R> (Emacs style) to install them.
-     ;; ----------------------------------------------------------------
+     ;; ---------------------------------------------------------------
      better-defaults
      emacs-lisp
      git
      markdown
      org
+     (clojure :variables
+              aggressive-indent-mode t)
      (shell :variables
              shell-default-height 30
              shell-default-position 'bottom)
@@ -38,8 +45,10 @@ values."
      rust
      python
      ruby
-     racket
-     common-lisp
+     (racket :variables
+             aggressive-indent-mode t)
+     (common-lisp :variables
+                  aggressive-indent-mode t)
      scheme
      latex
      (auto-completion :variables
@@ -118,8 +127,8 @@ values."
    ;; size to make separators look not too crappy.
    dotspacemacs-default-font '("Essential PragmataPro"
                                :size 14
-                               :weight normal
-                               :width normal
+                               :weight light
+                               :width narrow
                                :powerline-scale 1.0)
    ;; The leader key
    dotspacemacs-leader-key "SPC"
@@ -159,9 +168,11 @@ values."
    ;; auto-save the file in-place, `cache' to auto-save the file to another
    ;; file stored in the cache directory and `nil' to disable auto-saving.
    ;; (default 'cache)
-   dotspacemacs-auto-save-file-location 'cache
+   dotspacemacs-auto-save-file-location 'original
    ;; Maximum number of rollback slots to keep in the cache. (default 5)
    dotspacemacs-max-rollback-slots 5
+
+   dotspacemacs-large-file-size 1
    ;; If non nil then `ido' replaces `helm' for some commands. For now only
    ;; `find-files' (SPC f f), `find-spacemacs-file' (SPC f e s), and
    ;; `find-contrib-file' (SPC f e c) are replaced. (default nil)
@@ -241,6 +252,9 @@ values."
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
    dotspacemacs-whitespace-cleanup `trailing
+
+   dotspacemacs-folding-method 'evil
+   dotspacemacs-smart-closing-parenthesis nil
    ))
 
 (defun dotspacemacs/user-init ()
@@ -248,7 +262,19 @@ values."
 It is called immediately after `dotspacemacs/init'.  You are free to put almost
 any user code here.  The exception is org related code, which should be placed
 in `dotspacemacs/user-config'."
-  (setq-default rust-enable-racer t))
+  (setq-default rust-enable-racer t)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((clojure . t)
+     (scheme . t)
+     (sh . t)
+     (C . t)
+     (ruby . t)))
+  (require 'ob-clojure)
+  (setq org-babel-clojure-backend 'cider)
+  (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
+  (setq exec-path (append exec-path '("/usr/local/bin"))))
+
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
@@ -256,6 +282,7 @@ This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
   (setq mac-option-modifier 'super)
   (setq mac-command-modifier 'meta)
+
   (defun check-expansion ()
     (save-excursion
       (if (looking-at "\\_>") t
@@ -275,6 +302,7 @@ layers configuration. You are free to put any user code."
           (if (check-expansion)
               (company-complete-common)
             (indent-for-tab-command)))))
+  (setq clojure-enable-fancify-symbols t)
   (defun bind-tab-properly ()
     "Binds tab to tab-indent-or-complete, overwritting yas and company bindings"
     (interactive)
@@ -354,3 +382,17 @@ layers configuration. You are free to put any user code."
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (winum unfill fuzzy clojure-cheatsheet yaml-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data clojure-snippets clj-refactor inflections edn paredit peg cider-eval-sexp-fu cider queue clojure-mode web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode slime-company slime company-auctex common-lisp-snippets packed auctex racket-mode faceup powerline spinner hydra parent-mode projectile pkg-info epl flx smartparens iedit anzu evil goto-chg undo-tree highlight f s diminish bind-map bind-key helm avy helm-core popup async package-build yapfify xterm-color toml-mode smeargle shell-pop rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake racer pyvenv pytest pyenv-mode py-isort pretty-lambdada pip-requirements orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode minitest markdown-toc markdown-mode magit-gitflow live-py-mode hy-mode htmlize helm-pydoc helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md geiser flycheck-rust seq flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help disaster diff-hl cython-mode company-statistics company-c-headers company-anaconda company cmake-mode clang-format chruby cargo rust-mode bundler inf-ruby auto-yasnippet yasnippet anaconda-mode pythonic ac-ispell auto-complete solarized-theme ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
