@@ -38,6 +38,8 @@ values."
      (clojure :variables
               aggressive-indent-mode t)
      (shell :variables
+            shell-default-shell 'eshell
+            shell-enable-smart-eshell t
             shell-default-height 30
             shell-default-position 'bottom)
      ;;spell-checking
