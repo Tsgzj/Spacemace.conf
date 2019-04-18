@@ -18,12 +18,12 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
-     swift
-     nginx
+     ;; swift
+     ;; nginx
      helm
      yaml
      html
-     clojure
+     ;; clojure
      javascript
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
@@ -32,6 +32,9 @@ values."
      ;; ---------------------------------------------------------------
      better-defaults
      emacs-lisp
+     lsp
+     dap
+     (java :variables java-backend 'lsp)
      git
      gtags
      markdown
@@ -48,16 +51,16 @@ values."
      syntax-checking
      version-control
      c-c++
-     rust
-     python
-     ruby
-     (mu4e :variables
-           mu4e-installation-path "/Users/wsun/.emacs.d/private/local/site-list")
-     (racket :variables
-             aggressive-indent-mode t)
-     (common-lisp :variables
-                  aggressive-indent-mode t)
-     scheme
+     ;; rust
+     ;; python
+     ;; ruby
+     ;; (mu4e :variables
+     ;;       mu4e-installation-path "/Users/wsun/.emacs.d/private/local/site-list")
+     ;; (racket :variables
+     ;;         aggressive-indent-mode t)
+     ;; (common-lisp :variables
+     ;;              aggressive-indent-mode t)
+     ;; scheme
      latex
      (auto-completion :variables
                       auto-completion-return-key-behavior 'complete
@@ -293,14 +296,6 @@ layers configuration. You are free to put any user code."
 
   (setq multi-term-program "/bin/zsh")
 
-  (autoload 'run-prolog "prolog" "Start a Prolog sub-process." t)
-  (autoload 'prolog-mode "prolog" "Major mode for editing Prolog programs." t)
-  (autoload 'mercury-mode "prolog" "Major mode for editing Mercury programs." t)
-  (setq prolog-system 'swi)
-  (setq auto-mode-alist (append '(("\\.pl$" . prolog-mode)
-                                  ("\\.m$" . mercury-mode))
-                                auto-mode-alist))
-
   (defun check-expansion ()
     (save-excursion
       (if (looking-at "\\_>") t
@@ -382,22 +377,23 @@ layers configuration. You are free to put any user code."
   (setq-default evil-escape-delay 0.1)
   (setq c-default-style "k&r"
         c-basic-offset 4)
-  )
+
+  (with-eval-after-load 'java-mode
+    (require 'lsp-java-boot)
+    (add-hook 'lsp-mode-hook #'lsp-lens-mode)
+    (add-hook 'java-mode-hook #'lsp-java-boot-lens-mode))
 
 (with-eval-after-load 'org
   ;; to avoid conflict according to the doc
   (require 'ob-clojure)
   (require 'ob-shell)
   (require 'ob-haskell)
-  (require 'ob-ruby)
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((clojure . t)
-     (scheme . t)
      (shell . t)
      (haskell . t)
-     (C . t)
-     (ruby . t)))
+     (C . t)))
   (setq org-babel-clojure-backend 'cider)
   (plist-put org-format-latex-options :scale 1.5))
 
@@ -406,71 +402,6 @@ layers configuration. You are free to put any user code."
       "(do (require 'figwheel-sidecar.repl-api)
            (figwheel-sidecar.repl-api/start-figwheel!)
            (figwheel-sidecar.repl-api/cljs-repl))")
-
-;; configs for mu4e
-(setq mu4e-maildir "~/.Mail"
-      mu4e-trash-folder "/Trash"
-      mu4e-refile-folder "/Archive"
-      mu4e-compose-signature-auto-include nil
-      mu4e-view-show-images t
-      mu4e-view-show-addresses t
-      mu4e-headers-results-limit 500
-      mu4e-cache-maildir-list t)
-
-;; Now I set a list of
-(defvar my-mu4e-account-alist
-  '(("Gmail"
-     (mu4e-sent-folder "/Gmail/sent")
-     (user-mail-address "wxsun1991@gmail.com")
-     (smtpmail-smtp-user "wxsun1991@gmail.com")
-     (smtpmail-local-domain "tsgzj.me")
-     (smtpmail-default-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-service 587)
-     )
-    ("NNL"
-     (mu4e-sent-folder "/Gmail/sent")
-     (user-mail-address "wsun@noknok.com")
-     (smtpmail-smtp-user "wxsun1991@gamil.com")
-     (smtpmail-local-domain "tsgzj.me")
-     (smtpmail-default-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-service 587)
-     )
-    ("Personal"
-     (mu4e-sent-folder "/Gmail/sent")
-     (user-mail-address "swx@tsgzj.me")
-     (smtpmail-smtp-user "wxsun1991@gmail.com")
-     (smtpmail-local-domain "tsgzj.me")
-     (smtpmail-default-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-service 587)
-     )
-     ;; Include any other accounts here ...
-    ))
-
-(defun my-mu4e-set-account ()
-  "Set the account for composing a message.
-   This function is taken from:
-     https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
-  (let* ((account
-    (if mu4e-compose-parent-message
-        (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
-    (string-match "/\\(.*?\\)/" maildir)
-    (match-string 1 maildir))
-      (completing-read (format "Compose with account: (%s) "
-             (mapconcat #'(lambda (var) (car var))
-            my-mu4e-account-alist "/"))
-           (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
-           nil t nil nil (caar my-mu4e-account-alist))))
-   (account-vars (cdr (assoc account my-mu4e-account-alist))))
-    (if account-vars
-  (mapc #'(lambda (var)
-      (set (car var) (cadr var)))
-        account-vars)
-      (error "No email account found"))))
-(add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
-
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -492,7 +423,8 @@ layers configuration. You are free to put any user code."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ ))
+
 (defun dotspacemacs/emacs-custom-settings ()
   "Emacs custom settings.
 This is an auto-generated function, do not modify its content directly, use
