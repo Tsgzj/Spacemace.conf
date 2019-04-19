@@ -18,12 +18,10 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
-     ;; swift
-     ;; nginx
      helm
      yaml
      html
-     ;; clojure
+     clojure
      javascript
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
@@ -51,16 +49,7 @@ values."
      syntax-checking
      version-control
      c-c++
-     ;; rust
      ;; python
-     ;; ruby
-     ;; (mu4e :variables
-     ;;       mu4e-installation-path "/Users/wsun/.emacs.d/private/local/site-list")
-     ;; (racket :variables
-     ;;         aggressive-indent-mode t)
-     ;; (common-lisp :variables
-     ;;              aggressive-indent-mode t)
-     ;; scheme
      latex
      (auto-completion :variables
                       auto-completion-return-key-behavior 'complete
