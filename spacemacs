@@ -17,10 +17,10 @@ values."
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
-   '(
-     swift
-     nginx
+   '(csv
+     python
      helm
+     org-roam
      yaml
      html
      clojure
@@ -32,6 +32,10 @@ values."
      ;; ---------------------------------------------------------------
      better-defaults
      emacs-lisp
+     racket
+     lsp
+     dap
+     (java :variables java-backend 'lsp)
      git
      gtags
      markdown
@@ -48,16 +52,7 @@ values."
      syntax-checking
      version-control
      c-c++
-     rust
-     python
-     ruby
-     (mu4e :variables
-           mu4e-installation-path "/Users/wsun/.emacs.d/private/local/site-list")
-     (racket :variables
-             aggressive-indent-mode t)
-     (common-lisp :variables
-                  aggressive-indent-mode t)
-     scheme
+     ;; python
      latex
      (auto-completion :variables
                       auto-completion-return-key-behavior 'complete
@@ -130,8 +125,7 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(solarized-light solarized-dark
-                                         spacemacs-dark monokai)
+   dotspacemacs-themes '(solarized-gruvbox-light)
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
@@ -273,6 +267,10 @@ values."
 It is called immediately after `dotspacemacs/init'.  You are free to put almost
 any user code here.  The exception is org related code, which should be placed
 in `dotspacemacs/user-config'."
+  (defun ask-user-about-lock (file other-user)
+    "A value of t says to grab the lock on the file."
+    t)
+  (setq-default quelpa-build-tar-executable "/usr/local/bin/gtar")
   (setq-default rust-enable-racer t)
   (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
   (setq exec-path (append exec-path '("/usr/local/bin"))))
@@ -291,15 +289,43 @@ layers configuration. You are free to put any user code."
   (indent-guide-global-mode t)
   (display-time-mode)
 
-  (setq multi-term-program "/bin/zsh")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; This section contains configuration for org mode ;;
+  ;; 1. GTD                                           ;;
+  ;; 2. Zettlekasten                                  ;;
+  ;; * org-roam                                       ;;
+  ;; * deft                                           ;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (setq agenda-org-files '("~/org/GTD/Inbox.org"
+                           "~/org/GTD/GTD.org"
+                           "~/org/GTD/Tickler.org"))
 
-  (autoload 'run-prolog "prolog" "Start a Prolog sub-process." t)
-  (autoload 'prolog-mode "prolog" "Major mode for editing Prolog programs." t)
-  (autoload 'mercury-mode "prolog" "Major mode for editing Mercury programs." t)
-  (setq prolog-system 'swi)
-  (setq auto-mode-alist (append '(("\\.pl$" . prolog-mode)
-                                  ("\\.m$" . mercury-mode))
-                                auto-mode-alist))
+  (setq org-capture-templates '(("t" "Todo [inbox]" entry
+                                 (file+headline "~/org/GTD/inbox.org" "Tasks")
+                                 "* TODO %i%?")
+                                ("T" "Tickler" entry
+                                 (file+headline "~/org/GTD/tickler.org" "Tickler")
+                                 "* %i%? \n %U")))
+
+  (setq org-refile-targets '(("~/org/GTD/Tickler.org" :maxlevel . 2)
+                             ("~/org/GTD/GTD.org" :maxlevel . 3)))
+
+  (with-eval-after-load 'org
+    ;; to avoid conflict according to the doc
+    (require 'ob-clojure)
+    (require 'ob-shell)
+    (require 'ob-haskell)
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((clojure . t)
+       (shell . t)
+       (haskell . t)
+       (C . t)))
+    (setq org-babel-clojure-backend 'cider)
+    (plist-put org-format-latex-options :scale 1.5))
+
+  ;; Use zsh by default
+  (setq multi-term-program "/bin/zsh")
 
   (defun check-expansion ()
     (save-excursion
@@ -330,147 +356,60 @@ layers configuration. You are free to put any user code."
     (define-key company-active-map [tab] 'tab-indent-or-complete)
     (add-hook 'company-mode-hook 'bind-tab-properly))
   (global-set-key (kbd "TAB") 'tab-indent-or-complete)
-  ;; (add-hook 'rust-mode-hook 'pretty-lambda-mode)
-  ;; (add-hook 'common-lisp-lisp-mode-hook 'pretty-lambda-mode)
-  ;; (add-hook 'emacs-lisp-mode-hook 'pretty-lambda-mode)
-  ;; (add-hook 'racket-mode-hook 'pretty-lambda-mode)
+  (add-hook 'racket-mode-hook 'pretty-lambda-mode)
   (global-set-key (kbd "C-x C-h") help-map)
   (global-set-key (kbd "C-h") 'previous-line)
 
-  ;; (define-key evil-normal-state-map "\C-e" 'evil-end-of-line)
-  ;; (define-key evil-insert-state-map "\C-e" 'end-of-line)
-  ;; (define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
-  ;; (define-key evil-motion-state-map "\C-e" 'evil-end-of-line)
-  ;; (define-key evil-normal-state-map "\C-f" 'evil-forward-char)
-  ;; (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
-  ;; (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
-  ;; (define-key evil-normal-state-map "\C-b" 'evil-backward-char)
-  ;; (define-key evil-insert-state-map "\C-b" 'evil-backward-char)
-  ;; (define-key evil-visual-state-map "\C-b" 'evil-backward-char)
-  ;; (define-key evil-normal-state-map "\C-d" 'evil-delete-char)
-  ;; (define-key evil-insert-state-map "\C-d" 'evil-delete-char)
-  ;; (define-key evil-visual-state-map "\C-d" 'evil-delete-char)
-  ;; (define-key evil-normal-state-map "\C-n" 'evil-next-line)
-  ;; (define-key evil-insert-state-map "\C-n" 'evil-next-line)
-  ;; (define-key evil-visual-state-map "\C-n" 'evil-next-line)
-  ;; (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
-  ;; (define-key evil-insert-state-map "\C-p" 'evil-previous-line)
-  ;; (define-key evil-visual-state-map "\C-p" 'evil-previous-line)
-  ;; (define-key evil-normal-state-map "\C-w" 'evil-delete)
-  ;; (define-key evil-insert-state-map "\C-w" 'evil-delete)
-  ;; (define-key evil-visual-state-map "\C-w" 'evil-delete)
-  ;; (define-key evil-normal-state-map "\C-y" 'yank)
-  ;; (define-key evil-insert-state-map "\C-y" 'yank)
-  ;; (define-key evil-visual-state-map "\C-y" 'yank)
-  ;; (define-key evil-normal-state-map "\C-k" 'kill-line)
-  ;; (define-key evil-insert-state-map "\C-k" 'kill-line)
-  ;; (define-key evil-visual-state-map "\C-k" 'kill-line)
-  ;; (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
-  ;; (define-key evil-visual-state-map "Q" 'call-last-kbd-macro)
-  ;; (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
+  (define-key evil-normal-state-map "\C-e" 'evil-end-of-line)
+  (define-key evil-insert-state-map "\C-e" 'end-of-line)
+  (define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
+  (define-key evil-motion-state-map "\C-e" 'evil-end-of-line)
+  (define-key evil-normal-state-map "\C-f" 'evil-forward-char)
+  (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
+  (define-key evil-insert-state-map "\C-f" 'evil-forward-char)
+  (define-key evil-normal-state-map "\C-b" 'evil-backward-char)
+  (define-key evil-insert-state-map "\C-b" 'evil-backward-char)
+  (define-key evil-visual-state-map "\C-b" 'evil-backward-char)
+  (define-key evil-normal-state-map "\C-d" 'evil-delete-char)
+  (define-key evil-insert-state-map "\C-d" 'evil-delete-char)
+  (define-key evil-visual-state-map "\C-d" 'evil-delete-char)
+  (define-key evil-normal-state-map "\C-n" 'evil-next-line)
+  (define-key evil-insert-state-map "\C-n" 'evil-next-line)
+  (define-key evil-visual-state-map "\C-n" 'evil-next-line)
+  (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
+  (define-key evil-insert-state-map "\C-p" 'evil-previous-line)
+  (define-key evil-visual-state-map "\C-p" 'evil-previous-line)
+  (define-key evil-normal-state-map "\C-w" 'evil-delete)
+  (define-key evil-insert-state-map "\C-w" 'evil-delete)
+  (define-key evil-visual-state-map "\C-w" 'evil-delete)
+  (define-key evil-normal-state-map "\C-y" 'yank)
+  (define-key evil-insert-state-map "\C-y" 'yank)
+  (define-key evil-visual-state-map "\C-y" 'yank)
+  (define-key evil-normal-state-map "\C-k" 'kill-line)
+  (define-key evil-insert-state-map "\C-k" 'kill-line)
+  (define-key evil-visual-state-map "\C-k" 'kill-line)
+  (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
+  (define-key evil-visual-state-map "Q" 'call-last-kbd-macro)
+  (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
 
   (defun evil-undefine ()
     (interactive)
     (let (evil-mode-map-alist)
       (call-interactively (key-binding (this-command-keys)))))
 
-  ;;Exit insert mode by pressing j and then j quickly
-  ;;(require 'key-chord)
-  ;;(key-chord-mode 1)
-  ;;(key-chord-define evil-insert-state-map  "hh" 'evil-normal-state)
-  (setq-default evil-escape-key-sequence "ht")
-  (setq-default evil-escape-delay 0.1)
   (setq c-default-style "k&r"
         c-basic-offset 4)
-  )
 
-(with-eval-after-load 'org
-  ;; to avoid conflict according to the doc
-  (require 'ob-clojure)
-  (require 'ob-shell)
-  (require 'ob-haskell)
-  (require 'ob-ruby)
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((clojure . t)
-     (scheme . t)
-     (shell . t)
-     (haskell . t)
-     (C . t)
-     (ruby . t)))
-  (setq org-babel-clojure-backend 'cider)
-  (plist-put org-format-latex-options :scale 1.5))
+  (with-eval-after-load 'java-mode
+    (require 'lsp-java-boot)
+    (add-hook 'lsp-mode-hook #'lsp-lens-mode)
+    (add-hook 'java-mode-hook #'lsp-java-boot-lens-mode))
 
 ;;clojurescript with figwheel
 (setq cider-cljs-lein-repl
       "(do (require 'figwheel-sidecar.repl-api)
            (figwheel-sidecar.repl-api/start-figwheel!)
            (figwheel-sidecar.repl-api/cljs-repl))")
-
-;; configs for mu4e
-(setq mu4e-maildir "~/.Mail"
-      mu4e-trash-folder "/Trash"
-      mu4e-refile-folder "/Archive"
-      mu4e-compose-signature-auto-include nil
-      mu4e-view-show-images t
-      mu4e-view-show-addresses t
-      mu4e-headers-results-limit 500
-      mu4e-cache-maildir-list t)
-
-;; Now I set a list of
-(defvar my-mu4e-account-alist
-  '(("Gmail"
-     (mu4e-sent-folder "/Gmail/sent")
-     (user-mail-address "wxsun1991@gmail.com")
-     (smtpmail-smtp-user "wxsun1991@gmail.com")
-     (smtpmail-local-domain "tsgzj.me")
-     (smtpmail-default-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-service 587)
-     )
-    ("NNL"
-     (mu4e-sent-folder "/Gmail/sent")
-     (user-mail-address "wsun@noknok.com")
-     (smtpmail-smtp-user "wxsun1991@gamil.com")
-     (smtpmail-local-domain "tsgzj.me")
-     (smtpmail-default-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-service 587)
-     )
-    ("Personal"
-     (mu4e-sent-folder "/Gmail/sent")
-     (user-mail-address "swx@tsgzj.me")
-     (smtpmail-smtp-user "wxsun1991@gmail.com")
-     (smtpmail-local-domain "tsgzj.me")
-     (smtpmail-default-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-server "smtp.gmail.com")
-     (smtpmail-smtp-service 587)
-     )
-     ;; Include any other accounts here ...
-    ))
-
-(defun my-mu4e-set-account ()
-  "Set the account for composing a message.
-   This function is taken from:
-     https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
-  (let* ((account
-    (if mu4e-compose-parent-message
-        (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
-    (string-match "/\\(.*?\\)/" maildir)
-    (match-string 1 maildir))
-      (completing-read (format "Compose with account: (%s) "
-             (mapconcat #'(lambda (var) (car var))
-            my-mu4e-account-alist "/"))
-           (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
-           nil t nil nil (caar my-mu4e-account-alist))))
-   (account-vars (cdr (assoc account my-mu4e-account-alist))))
-    (if account-vars
-  (mapc #'(lambda (var)
-      (set (car var) (cadr var)))
-        account-vars)
-      (error "No email account found"))))
-(add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
-
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -492,23 +431,30 @@ layers configuration. You are free to put any user code."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ ))
+
 (defun dotspacemacs/emacs-custom-settings ()
   "Emacs custom settings.
 This is an auto-generated function, do not modify its content directly, use
 Emacs customize menu instead.
 This function is called at the very end of Spacemacs initialization."
-  (custom-set-variables
-   ;; custom-set-variables was added by Custom.
-   ;; If you edit it by hand, you could mess it up, so be careful.
-   ;; Your init file should contain only one such instance.
-   ;; If there is more than one, they won't work right.
-   '(package-selected-packages
-     (quote
-      (dash font-lock+ emoji-cheat-sheet-plus company-emoji winum unfill fuzzy clojure-cheatsheet yaml-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data clojure-snippets clj-refactor inflections edn paredit peg cider-eval-sexp-fu cider queue clojure-mode web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode slime-company slime company-auctex common-lisp-snippets packed auctex racket-mode faceup powerline spinner hydra parent-mode projectile pkg-info epl flx smartparens iedit anzu evil goto-chg undo-tree highlight f s diminish bind-map bind-key helm avy helm-core popup async package-build yapfify xterm-color toml-mode smeargle shell-pop rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake racer pyvenv pytest pyenv-mode py-isort pip-requirements orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode minitest markdown-toc markdown-mode magit-gitflow live-py-mode hy-mode htmlize helm-pydoc helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md geiser flycheck-rust seq flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help disaster diff-hl cython-mode company-statistics company-c-headers company-anaconda company cmake-mode clang-format chruby cargo rust-mode bundler inf-ruby auto-yasnippet yasnippet anaconda-mode pythonic ac-ispell auto-complete solarized-theme ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))))
-  (custom-set-faces
-   ;; custom-set-faces was added by Custom.
-   ;; If you edit it by hand, you could mess it up, so be careful.
-   ;; Your init file should contain only one such instance.
-   ;; If there is more than one, they won't work right.
-   ))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "a2cde79e4cc8dc9a03e7d9a42fabf8928720d420034b66aecc5b665bbf05d4e9" "0598c6a29e13e7112cfbc2f523e31927ab7dce56ebb2016b567e1eff6dc1fd4f" "36c86cb6c648b9a15d849026c90bd6a4ae76e4d482f7bcd138dedd4707ff26a5" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "dcb9fd142d390bb289fee1d1bb49cb67ab7422cd46baddf11f5c9b7ff756f64c" default)))
+ '(evil-want-Y-yank-to-eol t)
+ '(package-selected-packages
+   (quote
+    (csv-mode stickyfunc-enhance pippel pipenv importmagic epc ctable concurrent deferred helm-cscope xcscope counsel-gtags blacken dash font-lock+ emoji-cheat-sheet-plus company-emoji winum unfill fuzzy clojure-cheatsheet yaml-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data clojure-snippets clj-refactor inflections edn paredit peg cider-eval-sexp-fu cider queue clojure-mode web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode slime-company slime company-auctex common-lisp-snippets packed auctex racket-mode faceup powerline spinner hydra parent-mode projectile pkg-info epl flx smartparens iedit anzu evil goto-chg undo-tree highlight f s diminish bind-map bind-key helm avy helm-core popup async package-build yapfify xterm-color toml-mode smeargle shell-pop rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake racer pyvenv pytest pyenv-mode py-isort pip-requirements orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode minitest markdown-toc markdown-mode magit-gitflow live-py-mode hy-mode htmlize helm-pydoc helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md geiser flycheck-rust seq flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help disaster diff-hl cython-mode company-statistics company-c-headers company-anaconda company cmake-mode clang-format chruby cargo rust-mode bundler inf-ruby auto-yasnippet yasnippet anaconda-mode pythonic ac-ispell auto-complete solarized-theme ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line)))
+ '(send-mail-function (quote smtpmail-send-it)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((((class color) (min-colors 89)) (:foreground "#657b83" :background "#fdf6e3")))))
+)
