@@ -1,7 +1,8 @@
 My [Spacemacs](https://github.com/syl19bnr/spacemacs) configuration
 
-# Features changed
-1. <TAB> can triggle both yasnippet and company-mode
-2. Added pretty-lambda-mode
-3. Added key-chord-mode
-4. UI changing
+Need to link the `spacemacs` file and `private` folder
+
+---
+ln -s /path/to/proj/spacemacs ~/.spacemacs
+ln -s /path/to/proj/private ~/.emacs.d/spacemacs
+---
