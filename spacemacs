@@ -36,6 +36,7 @@ values."
      gtags
      markdown
      org
+     deft
      (clojure :variables
               aggressive-indent-mode t)
      (shell :variables
@@ -43,6 +44,9 @@ values."
             shell-enable-smart-eshell t
             shell-default-height 30
             shell-default-position 'bottom)
+     (treemacs :variables
+               treemacs-use-follow-mode t
+               treemacs-use-git-mode 'deferred)
      ;;spell-checking
      haskell
      syntax-checking
@@ -127,7 +131,7 @@ values."
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
    dotspacemacs-default-font '("Essential PragmataPro"
-                               :size 14
+                               :size 13
                                :weight light
                                :width narrow
                                :powerline-scale 1.0)
@@ -221,6 +225,7 @@ values."
    dotspacemacs-inactive-transparency 90
    ;; If non nil unicode symbols are displayed in the mode line. (default t)
    dotspacemacs-mode-line-unicode-symbols t
+   dotspacemacs-mode-line-theme 'vanilla
    ;; If non nil smooth scrolling (native-scrolling) is enabled. Smooth
    ;; scrolling overrides the default behavior of Emacs which recenters the
    ;; point when it reaches the top or bottom of the screen. (default t)
@@ -253,7 +258,6 @@ values."
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
    dotspacemacs-whitespace-cleanup `trailing
-
    dotspacemacs-folding-method 'evil
    dotspacemacs-smart-closing-parenthesis nil
    ))
@@ -279,10 +283,143 @@ layers configuration. You are free to put any user code."
   (setq mac-option-modifier 'super)
   (setq mac-command-modifier 'meta)
   (setq powerline-default-separator 'alternate)
-
   (global-prettify-symbols-mode +1)
   (indent-guide-global-mode t)
   (display-time-mode)
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Treemacs config                ;;
+  ;; Setting indentation to 1       ;;
+  ;; Using all-the-icons-font       ;;
+  ;; Theme copied from Kaolin theme ;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (setq treemacs-indentation 1)
+  (with-eval-after-load 'treemacs
+    (treemacs-modify-theme "Default"
+      :icon-directory (f-join treemacs-dir "icons/default")
+      :config
+      (progn
+        ;; Set fallback icon
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-octicon "file-text"
+                                                     :height 1.10
+                                                     :v-adjust 0.1))
+         :extensions (fallback))
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-material "subject"
+                                                      :v-adjust -0.2
+                                                      :height 1.3
+                                                      :face 'font-lock-variable-name-face))
+         :extensions (root))
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-material "folder_open"
+                                                      ;; :v-adjust 0.05
+                                                      :height 1.1))
+         ;; :face 'font-lock-doc-face))
+         :extensions (dir-open))
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-material "folder"
+                                                      ;; :v-adjust 0.05
+                                                      :height 1.1))
+
+         :extensions (dir-closed))
+        (treemacs-create-icon
+         :icon (format "%s " (all-the-icons-material "close"
+                                                     :size 1.0
+                                                     ;; :v-adjust 0.1
+                                                     :face 'font-lock-keyword-face))
+         :extensions (tag-open))
+        (treemacs-create-icon
+         :icon (format "%s " (all-the-icons-faicon "chevron-down"
+                                                   :size 0.9
+                                                   :v-adjust 0.1
+                                                   :face 'font-lock-keyword-face))
+         :extensions (tag-closed))
+        (treemacs-create-icon
+         :icon (format "%s " (all-the-icons-faicon "tag"
+                                                   :height 0.9
+                                                   :face 'font-lock-type-face))
+         :extensions (tag-leaf))
+        (treemacs-create-icon
+         :icon (format "%s " (all-the-icons-material "error"
+                                                     :height 0.9
+                                                     :face 'error))
+         :extensions (error)
+         :fallback (propertize "• " 'face 'font-lock-warning-face))
+        (treemacs-create-icon
+         :icon (format "%s " (all-the-icons-material "warning"
+                                                     :height 0.9
+                                                     :face 'error))
+         :extensions (warning)
+         :fallback (propertize "• " 'face 'font-lock-string-face))
+        (treemacs-create-icon
+         :icon (format "%s " (all-the-icons-material "info"
+                                                     :height 0.9
+                                                     :face 'font-lock-string-face))
+         :extensions (info)
+         :fallback (propertize "• " 'face 'font-lock-string-face))
+        ;; Icons for filetypes
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "css3")) :extensions ("css"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "git")) :extensions ("gitignore" "git" "gitconfig" "gitmodules"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "html5")) :extensions ("html" "htm"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "java")) :extensions ("java" "jar"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "python")) :extensions ("py"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "rust")) :extensions ("rs"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "haskell")) :extensions ("hs"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "c")) :extensions ("c" "h"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "crystal")) :extensions ("cr"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "cplusplus")) :extensions ("cpp" "cxx" "hpp" "tpp" "cc" "hh"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "ruby-alt")) :extensions ("rb"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "scala")) :extensions ("scala"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "elixir")) :extensions ("ex" "exs"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "erlang")) :extensions ("erl" "hrl"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "clojure")) :extensions ("clj" "cljs" "cljc"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "cabal")) :extensions ("cabal"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "clisp")) :extensions ("lisp"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "go")) :extensions ("go"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "elisp" :v-adjust -0.15)) :extensions ("el" "elc"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "julia")) :extensions ("jl"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "kotlin")) :extensions ("kt" "kts"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "javascript-badge")) :extensions ("js"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "jsx2-alt")) :extensions ("jsx"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "ocaml")) :extensions ("ml" "mli"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "org")) :extensions ("org"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-alltheicon "terminal")) :extensions ("sh" "zsh" "fish"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "typescript")) :extensions ("ts"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "R")) :extensions ("r"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "tex")) :extensions ("tex"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "rst")) :extensions ("rst"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "vue")) :extensions ("vue"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-octicon "markdown" :v-adjust 0.05)) :extensions ("md" "markdown"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-octicon "file-pdf")) :extensions ("pdf"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-octicon "database")) :extensions ("sql"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-material "style")) :extensions ("styles"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "asciidoc")) :extensions ("adoc" "asciidoc"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "sbt")) :extensions ("sbt"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "dockerfile")) :extensions ("dockerfile"))
+        (treemacs-create-icon :icon (format " %s " (all-the-icons-fileicon "racket")) :extensions ("racket" "rkt" "rktl" "rktd" "scrbl" "scribble" "plt"))
+
+        ;; Media files icon
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-octicon "file-media" :v-adjust 0.1))
+         :extensions ("jpg" "jpeg" "png" "gif" "ico" "tif" "tiff" "svg" "bmp"
+                      "psd" "ai" "eps" "indd" "mov" "avi" "mp4" "webm" "webp"
+                      "mkv" "wav" "mp3" "ogg" "midi"))
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-octicon "file-text"
+                                                     :height 1.1
+                                                     :v-adjust 0.05))
+         :extensions ("rst" "log" "txt" "contribute" "license" "readme" "changelog"))
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-faicon "cogs"))
+         :extensions ("conf" "cfg" "yaml" "yml" "json" "xml" "toml" "cson" "ini"))
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-octicon "code"))
+         :extensions ("tpl" "erb" "mustache" "twig" "ejs" "mk" "haml" "pug" "jade"))
+        (treemacs-create-icon
+         :icon (format " %s " (all-the-icons-octicon "file-zip"))
+         :extensions ("zip" "xz" "tar" "gz" "7z" "rar"))
+        )))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; This section contains configuration for org mode ;;
@@ -291,9 +428,7 @@ layers configuration. You are free to put any user code."
   ;; * org-roam                                       ;;
   ;; * deft                                           ;;
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (setq agenda-org-files '("~/org/GTD/Inbox.org"
-                           "~/org/GTD/GTD.org"
-                           "~/org/GTD/Tickler.org"))
+  (setq org-agenda-files '("~/org/" "~/org/GTD/"))
 
   (setq org-capture-templates '(("t" "Todo [inbox]" entry
                                  (file+headline "~/org/GTD/inbox.org" "Tasks")
@@ -303,7 +438,8 @@ layers configuration. You are free to put any user code."
                                  "* %i%? \n %U")))
 
   (setq org-refile-targets '(("~/org/GTD/Tickler.org" :maxlevel . 2)
-                             ("~/org/GTD/GTD.org" :maxlevel . 3)))
+                             ("~/org/GTD/GTD.org" :maxlevel . 3)
+                             ("~/org/GTD/archive.org" :maxlevel . 3)))
 
   (with-eval-after-load 'org
     ;; to avoid conflict according to the doc
@@ -341,6 +477,7 @@ layers configuration. You are free to put any user code."
           (if (check-expansion)
               (company-complete-common)
             (indent-for-tab-command)))))
+
   (setq clojure-enable-fancify-symbols t)
   (defun bind-tab-properly ()
     "Binds tab to tab-indent-or-complete, overwritting yas and company bindings"
@@ -444,7 +581,7 @@ This function is called at the very end of Spacemacs initialization."
  '(evil-want-Y-yank-to-eol t)
  '(package-selected-packages
    (quote
-    (counsel swiper ivy csv-mode stickyfunc-enhance pippel pipenv importmagic epc ctable concurrent deferred helm-cscope xcscope counsel-gtags blacken dash font-lock+ emoji-cheat-sheet-plus company-emoji winum unfill fuzzy clojure-cheatsheet yaml-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data clojure-snippets clj-refactor inflections edn paredit peg cider-eval-sexp-fu cider queue clojure-mode web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode slime-company slime company-auctex common-lisp-snippets packed auctex racket-mode faceup powerline spinner hydra parent-mode projectile pkg-info epl flx smartparens iedit anzu evil goto-chg undo-tree highlight f s diminish bind-map bind-key helm avy helm-core popup async package-build yapfify xterm-color toml-mode smeargle shell-pop rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake racer pyvenv pytest pyenv-mode py-isort pip-requirements orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode minitest markdown-toc markdown-mode magit-gitflow live-py-mode hy-mode htmlize helm-pydoc helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md geiser flycheck-rust seq flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help disaster diff-hl cython-mode company-statistics company-c-headers company-anaconda company cmake-mode clang-format chruby cargo rust-mode bundler inf-ruby auto-yasnippet yasnippet anaconda-mode pythonic ac-ispell auto-complete solarized-theme ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line)))
+   (counsel swiper ivy deft csv-mode stickyfunc-enhance pippel pipenv importmagic epc ctable concurrent deferred helm-cscope xcscope counsel-gtags blacken dash font-lock+ emoji-cheat-sheet-plus company-emoji winum unfill fuzzy clojure-cheatsheet yaml-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data clojure-snippets clj-refactor inflections edn paredit peg cider-eval-sexp-fu cider queue clojure-mode web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode slime-company slime company-auctex common-lisp-snippets packed auctex racket-mode faceup powerline spinner hydra parent-mode projectile pkg-info epl flx smartparens iedit anzu evil goto-chg undo-tree highlight f s diminish bind-map bind-key helm avy helm-core popup async package-build yapfify xterm-color toml-mode smeargle shell-pop rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake racer pyvenv pytest pyenv-mode py-isort pip-requirements orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode minitest markdown-toc markdown-mode magit-gitflow live-py-mode hy-mode htmlize helm-pydoc helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md geiser flycheck-rust seq flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help disaster diff-hl cython-mode company-statistics company-c-headers company-anaconda company cmake-mode clang-format chruby cargo rust-mode bundler inf-ruby auto-yasnippet yasnippet anaconda-mode pythonic ac-ispell auto-complete solarized-theme ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line)))
  '(send-mail-function (quote smtpmail-send-it)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
