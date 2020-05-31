@@ -58,6 +58,7 @@ values."
                       auto-completion-return-key-behavior 'complete
                       auto-completion-tab-key-behavior 'cycle)
      imenu-list
+     myleetcode
      )
 
    ;; List of additional packages that will be installed without being
