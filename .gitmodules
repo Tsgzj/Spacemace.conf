@@ -1,0 +1,6 @@
+[submodule "private/leetcode-emacs-layer"]
+	path = private/leetcode-emacs-layer
+	url = https://github.com/anmoljagetia/leetcode-emacs-layer.git
+[submodule "private/myleetcode"]
+	path = private/myleetcode
+	url = https://github.com/anmoljagetia/leetcode-emacs-layer.git
