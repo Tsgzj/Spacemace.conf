@@ -17,7 +17,7 @@ values."
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
-   '(lsp
+   '((lsp :variables lsp-rust-server 'rust-analyzer)
      dap
      csv
      python
@@ -287,6 +287,11 @@ layers configuration. You are free to put any user code."
   (global-prettify-symbols-mode +1)
   (indent-guide-global-mode t)
   (display-time-mode)
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; LeetCode Preference ;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;
+  (setq leetcode-prefer-language "rust")
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Treemacs config                ;;
