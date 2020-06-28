@@ -1,7 +1,6 @@
 [submodule "private/spacemacsOS"]
 	path = private/spacemacsOS
 	url = https://github.com/timor/spacemacsOS.git
-
 [submodule "private/myleetcode"]
 	path = private/myleetcode
 	url = https://github.com/anmoljagetia/leetcode-emacs-layer.git

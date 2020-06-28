@@ -19,6 +19,7 @@ values."
    dotspacemacs-configuration-layers
    '((lsp :variables lsp-rust-server 'rust-analyzer)
      dap
+     rust
      csv
      python
      helm
@@ -28,7 +29,6 @@ values."
      clojure
      javascript
      better-defaults
-     rust
      emacs-lisp
      racket
      (java :variables java-backend 'lsp)
@@ -132,7 +132,7 @@ values."
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
    dotspacemacs-default-font '("Essential PragmataPro"
-                               :size 13
+                               :size 14
                                :weight light
                                :width narrow
                                :powerline-scale 1.0)
